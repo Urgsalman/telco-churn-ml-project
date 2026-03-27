@@ -22,16 +22,25 @@ model_columns = pickle.load(open(columns_path, "rb"))
 
 st.set_page_config(page_title="Churn Prediction", layout="centered")
 
-st.write(
-"This application predicts whether a telecom customer is likely to churn "
-"based on tenure, monthly charges and contract type using a Machine Learning model."
-)
+st.title("📊 Customer Churn Prediction Dashboard")
 
-st.write("Enter customer information")
+st.markdown("""
+This application predicts whether a telecom customer is likely to churn using a Machine Learning model.
+
+###  Input Explanation
+- **Tenure**: Number of months the customer has stayed
+- **Monthly Charges**: Amount paid monthly
+- **Contract**: Type of subscription
+- **Payment Method**: How the customer pays
+""")
+
+st.divider()
 
 # ----------------------------
 # User Inputs
 # ----------------------------
+
+st.subheader("🧾 Enter customer information")
 
 tenure = st.slider("Tenure Months", 0, 72)
 
@@ -81,19 +90,23 @@ if payment_col in input_full.columns:
 # Prediction
 # ----------------------------
 
-if st.button("Predict Churn"):
+if st.button(" Predict Churn"):
 
     prediction = model.predict(input_full)
     probability = model.predict_proba(input_full)[0][1]
 
-    st.subheader("Prediction Result")
+    st.subheader(" Prediction Result")
 
-    if prediction[0] == 1:
-        st.error("⚠️ Customer likely to churn")
+    # ----------------------------
+    # Business Interpretation
+    # ----------------------------
+
+    if probability > 0.5:
+        st.error(" High churn risk: Customer may leave soon.")
     else:
-        st.success("✅ Customer likely to stay")
+        st.success(" Low churn risk: Customer is likely to stay.")
 
-    st.write(f"Churn probability : {round(probability*100,2)} %")
+    st.write(f"**Churn probability:** {round(probability*100,2)} %")
 
     # ----------------------------
     # Probability Visualization
@@ -101,9 +114,20 @@ if st.button("Predict Churn"):
 
     fig, ax = plt.subplots()
 
-    ax.bar(["Stay","Churn"], [1-probability, probability])
+    ax.bar(["Stay", "Churn"], [1-probability, probability], color=["green", "red"])
 
     ax.set_ylabel("Probability")
     ax.set_title("Churn Probability")
+    ax.set_ylim(0, 1)
 
     st.pyplot(fig)
+
+    # ----------------------------
+    # Extra insight
+    # ----------------------------
+
+    st.markdown("""
+    ###  Insight
+    - A higher churn probability indicates a customer at risk.
+    - Businesses can use this prediction to take retention actions (offers, support, engagement).
+    """)
